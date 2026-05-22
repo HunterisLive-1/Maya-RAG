@@ -91,11 +91,10 @@ def main() -> None:
     ensure_dir(assets)
 
     try:
-        import PIL  # noqa: F401
-
-        PIL.Image
+        from PIL import Image  # noqa: F401
     except ImportError:
         run([sys.executable, "-m", "pip", "install", "pillow"])
+        from PIL import Image  # noqa: F401
 
     try:
         import PyInstaller  # noqa: F401

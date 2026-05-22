@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src http://127.0.0.1:* http://localhost:*;"
+    />
+    <title>BoilerMind Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="settings_style.css" />
+  </head>
+  <body class="settings-body">
+    <div class="settings-shell">
+      <header class="settings-titlebar settings-drag">
+        <span class="settings-title">⚙ BOILERMIND SETTINGS</span>
+        <button type="button" class="settings-close-btn no-drag" id="btnStClose" aria-label="Close">×</button>
+      </header>
+
+      <div class="settings-scroll">
+        <section class="st-section">
+          <h3 class="st-heading"><span class="st-bar"></span>API CONFIGURATION</h3>
+          <label class="st-label">Gemini API Key</label>
+          <div class="st-row-api">
+            <input type="password" id="inpApiKey" class="st-input flex1" autocomplete="off" spellcheck="false" />
+            <button type="button" class="st-btn-secondary" id="btnShowKey">Show</button>
+            <button type="button" class="st-btn-secondary" id="btnTestApi">Test</button>
+          </div>
+          <div id="apiTestStatus" class="st-muted">Status: idle</div>
+        </section>
+
+        <section class="st-section">
+          <h3 class="st-heading"><span class="st-bar"></span>QUERY SETTINGS</h3>
+          <div class="st-label">Search Results per Query (TOP_K)</div>
+          <div class="topk-row" id="topkRow"></div>
+          <div id="topkCaption" class="st-muted">Currently: 5 chunks</div>
+
+          <label class="st-label spaced">HUD WebSocket Port</label>
+          <input type="text" id="inpHudPort" class="st-input narrow" inputmode="numeric" pattern="[0-9]*" />
+          <div class="st-muted">Restart BoilerMind after changing port.</div>
+
+          <label class="st-label spaced">TTS Voice</label>
+          <select id="selVoice" class="st-select">
+            <option>Laomedeia</option>
+            <option>Aoede</option>
+            <option>Charon</option>
+            <option>Fenrir</option>
+            <option>Kore</option>
+          </select>
+        </section>
+
+        <section class="st-section">
+          <h3 class="st-heading"><span class="st-bar"></span>KNOWLEDGE BASE</h3>
+          <button type="button" class="st-btn-primary-outline" id="btnAddBook">＋ ADD BOOK (pick PDF)</button>
+          <div class="st-label spaced">Loaded Books</div>
+          <div id="booksWrap" class="books-wrap"></div>
+
+          <div class="ingest-panel">
+            <div class="st-label spaced">INGEST BOOK</div>
+            <div class="ingest-row"><span id="pickedPath" class="st-muted truncate">No file selected</span></div>
+            <label class="st-label">Display Name</label>
+            <input type="text" id="inpDisplayName" class="st-input full" />
+
+            <button type="button" class="st-btn-primary-outline" id="btnIngest">🔄 INGEST BOOK</button>
+            <div class="progress-wrap">
+              <div id="ingestProgressBar" class="progress-bar-inner"></div>
+            </div>
+            <div id="ingestStatus" class="st-muted"></div>
+          </div>
+        </section>
+
+        <button type="button" class="st-btn-save full" id="btnSaveSettings">SAVE SETTINGS</button>
+        <div id="saveBanner" class="save-banner hidden"></div>
+      </div>
+    </div>
+    <script src="settings.js"></script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+BoilerMind — place your engineering PDF here.
+
+Expected filename (from your note):
+  PRACTICAL BOILER OPERATION ENGINEERING AND POWER PLANT.pdf
+
+This file was not found on your Desktop automatically.
+Copy it into this `books` folder, then from the project root (with venv active) run:
+
+  python ingest_books.py
+
+Or ingest a specific path:
+  python ingest_books.py --book "path\to\PRACTICAL BOILER OPERATION ENGINEERING AND POWER PLANT.pdf" --name "Practical Boiler Operation Engineering and Power Plant"

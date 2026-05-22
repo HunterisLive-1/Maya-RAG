@@ -1,0 +1,13 @@
+{
+  "name": "boilermind-hud",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BoilerMind Electron HUD — activity, books, transcript",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.2.1"
+  }
+}

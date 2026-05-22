@@ -1,0 +1,325 @@
+/* BoilerMind Settings — SCADA-aligned */
+
+:root {
+  --accent-cyan: #00e5ff;
+  --accent-amber: #ffaa00;
+  --accent-green: #00ff88;
+  --accent-red: #ff3333;
+  --text-primary: #e0f4ff;
+  --text-secondary: #7aa8cc;
+  --text-dim: #3d6080;
+  --bg-shell: rgba(11, 22, 34, 0.98);
+  --border: #1a3a5c;
+
+  font-size: 13px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body.settings-body {
+  background: #0b1622;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+.settings-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.12);
+}
+
+.settings-titlebar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(6, 13, 22, 0.95);
+}
+
+.settings-drag {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.settings-title {
+  font-family: Orbitron, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  color: var(--accent-cyan);
+}
+
+.settings-close-btn {
+  -webkit-app-region: no-drag;
+  width: 32px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #0f1e2d;
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.settings-close-btn:hover {
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+
+.settings-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.st-section {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(26, 58, 92, 0.5);
+}
+
+.st-heading {
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: Orbitron, system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--text-secondary);
+}
+
+.st-bar {
+  width: 3px;
+  height: 13px;
+  background: linear-gradient(to bottom, var(--accent-cyan), transparent);
+  border-radius: 1px;
+}
+
+.st-label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.st-label.spaced {
+  margin-top: 12px;
+}
+
+.st-muted {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+.st-row-api {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.st-input {
+  background: rgba(6, 13, 22, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+.st-input.flex1 {
+  flex: 1;
+  min-width: 0;
+}
+.st-input.full {
+  width: 100%;
+}
+.st-input.narrow {
+  width: 100px;
+}
+
+.st-select {
+  width: 100%;
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #0f1e2d;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.st-btn-secondary {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #0f1e2d;
+  color: var(--text-secondary);
+  font-family: Orbitron, system-ui, sans-serif;
+  font-size: 9px;
+  cursor: pointer;
+}
+.st-btn-secondary:hover {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+.st-btn-primary-outline {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-cyan);
+  background: rgba(0, 229, 255, 0.06);
+  color: var(--accent-cyan);
+  font-family: Orbitron, system-ui, sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.st-btn-primary-outline:hover {
+  background: rgba(0, 229, 255, 0.12);
+}
+
+.st-btn-save {
+  margin-top: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #00cce6, #008ba3);
+  color: #06202a;
+  font-family: Orbitron, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+.st-btn-save.full {
+  width: 100%;
+}
+
+.topk-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.topk-btn {
+  min-width: 44px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #0f1e2d;
+  color: var(--text-secondary);
+  font-family: inherit;
+  cursor: pointer;
+}
+.topk-btn.active {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+.books-wrap {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(6, 13, 22, 0.6);
+}
+
+.book-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(26, 58, 92, 0.4);
+  font-size: 11px;
+}
+.book-line:last-child {
+  border-bottom: none;
+}
+
+.book-meta {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.btn-mini {
+  flex-shrink: 0;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 51, 51, 0.4);
+  background: transparent;
+  color: var(--accent-red);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ingest-panel {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(6, 13, 22, 0.45);
+}
+
+.ingest-row {
+  margin-bottom: 8px;
+}
+
+.truncate {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-wrap {
+  margin-top: 8px;
+  height: 6px;
+  background: rgba(26, 58, 92, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+  transition: width 0.25s ease;
+}
+
+.save-banner {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--accent-green);
+  font-size: 10px;
+  text-align: center;
+}
+.save-banner.hidden {
+  display: none;
+}

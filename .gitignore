@@ -1,0 +1,22 @@
+.env.local
+.env.local.bak
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+installer_output/
+.Python
+venv/
+.venv/
+
+data/chroma_db/
+hud_electron/node_modules/
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Optional: avoid committing large PDFs
+books/*.pdf

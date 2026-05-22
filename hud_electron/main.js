@@ -36,7 +36,7 @@ function booksDirFallback() {
 function createWindow() {
   const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
 
-  mainWindow = new BrowserWindow({
+  const winOpts = {
     width: HUD_W,
     height: HUD_H,
     x: Math.max(0, sw - HUD_W - HUD_MARGIN),
@@ -46,7 +46,9 @@ function createWindow() {
     backgroundColor: '#00000000',
     alwaysOnTop: true,
     skipTaskbar: false,
-    resizable: false,
+    resizable: true,
+    minWidth: 280,
+    minHeight: 420,
     hasShadow: false,
     show: false,
     webPreferences: {
@@ -54,7 +56,14 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-  });
+  };
+
+  /** Native edge/corner resize on frameless Windows (thin transparent windows). */
+  if (process.platform === 'win32') {
+    winOpts.thickFrame = true;
+  }
+
+  mainWindow = new BrowserWindow(winOpts);
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 

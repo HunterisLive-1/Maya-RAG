@@ -13,13 +13,15 @@ DefaultGroupName={#MyAppName}
 PrivilegesRequired=lowest
 OutputDir=installer_output
 OutputBaseFilename=BoilerMind_Setup_v{#MyAppVersion}
+; Existing install tracked by same AppId is upgraded via [Files] + [InstallDelete] below.
+CloseApplications=yes
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 DisableDirPage=no
 UninstallDisplayIcon={app}\{#MyAppExeName}
-; Uncomment when assets exist:
-; SetupIconFile=assets\icon.ico
+SetupIconFile=icon.ico
+; Optional wizard art (add BMPs next to installer.iss to enable):
 ; WizardImageFile=assets\installer_banner.bmp
 ; WizardSmallImageFile=assets\installer_icon.bmp
 
@@ -27,19 +29,30 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional icons:"; Flags: unchecked
+Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional icons:"
+
+[InstallDelete]
+; Before copying dist files: remove leftovers from last PyInstaller onedir (books\ and data\ are not listed — user content kept).
+Type: filesandordirs; Name: "{app}\_internal"
+Type: filesandordirs; Name: "{app}\assets"
+Type: filesandordirs; Name: "{app}\hud_electron"
+Type: files; Name: "{app}\BoilerMind.exe"
+Type: files; Name: "{app}\*.dll"
+Type: files; Name: "{app}\*.pyd"
 
 [Files]
 Source: "dist\BoilerMind\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Always ensure icon.ico is present at app root (used by shortcuts as direct fallback)
+Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]
 Name: "{app}\data"
 Name: "{app}\books"
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
-Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; WorkingDir: "{app}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; WorkingDir: "{app}"
+Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"; IconFilename: "{app}\icon.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Tasks: desktopicon; WorkingDir: "{app}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent

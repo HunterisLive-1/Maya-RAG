@@ -13,6 +13,21 @@ from paths import books_dir, env_local_path, get_hud_electron_dir, get_writable_
 from port_util import pick_hud_and_settings_ports
 
 
+def _setup_file_logging() -> None:
+    """Write logs to boilermind.log next to the exe (visible even with --windowed)."""
+    import logging.handlers
+
+    log_path = get_writable_root() / "boilermind.log"
+    fh = logging.handlers.RotatingFileHandler(
+        log_path, maxBytes=2 * 1024 * 1024, backupCount=2, encoding="utf-8"
+    )
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(
+        logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+    )
+    logging.getLogger().addHandler(fh)
+
+
 def _apply_env_aliases() -> None:
     """Map BOILERMIND_* aliases into MAYA_* keys read by verbatim live_engine.py."""
     lm = os.environ.get("BOILERMIND_LIVE_MODEL")
@@ -55,6 +70,11 @@ def _spawn_electron() -> subprocess.Popen | None:
     set_p = os.environ.get("BOILERMIND_SETTINGS_PORT", "7071")
     hud_host = os.environ.get("BOILERMIND_HUD_HOST", "127.0.0.1").strip() or "127.0.0.1"
 
+    icon_abs = ""
+    ic = get_writable_root() / "assets" / "icon.ico"
+    if ic.is_file():
+        icon_abs = str(ic.resolve())
+
     env = {
         **os.environ,
         "PYTHON_PID": str(os.getpid()),
@@ -63,6 +83,8 @@ def _spawn_electron() -> subprocess.Popen | None:
         "BOILERMIND_HUD_HOST": hud_host,
         "BOILERMIND_BOOKS_DIR": str(books_dir()),
     }
+    if icon_abs:
+        env["BOILERMIND_ICON_ICO"] = icon_abs
     try:
         return subprocess.Popen(
             argv,
@@ -99,6 +121,7 @@ async def async_main() -> None:
         format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
         force=True,
     )
+    _setup_file_logging()  # always write to boilermind.log (visible when --windowed hides console)
 
     if hud_p != hud_pref:
         logging.warning(
@@ -115,6 +138,10 @@ async def async_main() -> None:
 
     load_dotenv(env_local_path(), override=True)
     load_dotenv(writable / ".env", override=False)
+    # File may override BOILERMIND_*_PORT; Electron must match actual bound ports (hud_p / set_p).
+    os.environ["BOILERMIND_HUD_PORT"] = str(hud_p)
+    os.environ["BOILERMIND_HUD_WS_PORT"] = str(hud_p)
+    os.environ["BOILERMIND_SETTINGS_PORT"] = str(set_p)
     _apply_env_aliases()
 
     has_key = _has_api_key()
@@ -148,10 +175,18 @@ async def async_main() -> None:
     from settings_server import serve_settings_forever
 
     bridge = AppBridge.instance()
-    orch = BoilerMindOrchestrator()
 
-    settings_task = asyncio.create_task(serve_settings_forever(set_p))
+    async def _guarded_settings(port: int) -> None:
+        try:
+            await serve_settings_forever(port)
+        except Exception:
+            logging.exception("Settings API crashed on port %s — check boilermind.log", port)
+
+    settings_task = asyncio.create_task(_guarded_settings(set_p))
     hud_task = asyncio.create_task(run_ws_server_forever(bridge))
+    await asyncio.sleep(0)
+
+    orch = BoilerMindOrchestrator()
     proc = _spawn_electron()
 
     orch_started = False

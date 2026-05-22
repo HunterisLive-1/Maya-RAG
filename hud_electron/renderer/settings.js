@@ -3,15 +3,40 @@
 
 const TOPK_CHOICES = [3, 5, 7, 10];
 
-function apiBase() {
+/** Last resolved settings API origin (for error messages). */
+let lastResolvedOrigin = 'http://127.0.0.1:7071';
+
+/** True once we've received the real port from the WS hud_config message. */
+let _portConfirmed = false;
+/** Resolved port number pushed from the WS bridge (may differ from env var). */
+let _confirmedPort = null;
+
+async function apiBase() {
   try {
-    if (window.boilermindHud && typeof window.boilermindHud.settingsApiOrigin === 'function') {
-      return window.boilermindHud.settingsApiOrigin();
+    const shell = typeof window !== 'undefined' ? window.boilermindShell : undefined;
+    if (shell && typeof shell.getSettingsApiOrigin === 'function') {
+      const o = await shell.getSettingsApiOrigin();
+      if (o && typeof o === 'string' && o.startsWith('http')) {
+        lastResolvedOrigin = o;
+        return o;
+      }
     }
   } catch (_e) {
     /* noop */
   }
-  return 'http://127.0.0.1:7071';
+  try {
+    if (window.boilermindHud && typeof window.boilermindHud.settingsApiOrigin === 'function') {
+      const o = window.boilermindHud.settingsApiOrigin();
+      if (o && typeof o === 'string') {
+        lastResolvedOrigin = o;
+        return o;
+      }
+    }
+  } catch (_e2) {
+    /* noop */
+  }
+  lastResolvedOrigin = 'http://127.0.0.1:7071';
+  return lastResolvedOrigin;
 }
 
 let selectedTopK = 5;
@@ -47,8 +72,10 @@ function buildTopK() {
 }
 
 async function loadAll() {
+  let base;
   try {
-    const r = await fetch(`${apiBase()}/settings/load`);
+    base = await apiBase();
+    const r = await fetch(`${base}/settings/load`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
     selectedTopK = Number(d.top_k) || 5;
@@ -61,9 +88,56 @@ async function loadAll() {
     keyInp.placeholder = d.has_api_key ? (d.api_key_masked || '********') : 'Paste API key';
     $('apiTestStatus').textContent = 'Status: —';
     renderBooks(d.loaded_books);
+    return true;
   } catch (e) {
-    $('apiTestStatus').textContent = 'Status: cannot reach settings API (is Python running?)';
+    try {
+      base = await apiBase();
+    } catch (_e2) {
+      base = lastResolvedOrigin;
+    }
+    $('apiTestStatus').textContent =
+      `Cannot reach settings API at ${base} (${e.message || 'Failed to fetch'}). Is BoilerMind running? Check firewall.`;
+    return false;
   }
+}
+
+/**
+ * Wait for the real settings-API port to be confirmed via the WS hud_config
+ * message before making the first load call.  Falls back to an immediate call
+ * if we don't hear anything within ~2 s so the window is never blank.
+ */
+async function loadAllWhenReady() {
+  const MAX_POLLS = 20;        // 20 × 100 ms = 2 s
+  const POLL_MS  = 100;
+
+  // Poll until the IPC handle returns a port that was pushed from the WS bridge.
+  for (let i = 0; i < MAX_POLLS; i++) {
+    try {
+      const shell = typeof window !== 'undefined' ? window.boilermindShell : undefined;
+      if (shell && typeof shell.getSettingsApiOrigin === 'function') {
+        const origin = await shell.getSettingsApiOrigin();
+        // main.js returns the env-var default until settingsPortFromWs is set.
+        // We consider the port "confirmed" once we successfully load settings.
+        if (origin && origin.startsWith('http')) {
+          lastResolvedOrigin = origin;
+          const ok = await loadAll();
+          if (ok) return;   // success — done
+        }
+      }
+    } catch (_e) {
+      /* noop – keep polling */
+    }
+    await new Promise((res) => setTimeout(res, POLL_MS));
+  }
+
+  // Fallback: try one more time regardless
+  await loadAll();
+
+  // If it still failed, schedule a retry in 2 s in case Python is still starting.
+  setTimeout(async () => {
+    const ok = await loadAll();
+    if (!ok) setTimeout(() => loadAll(), 3000);
+  }, 2000);
 }
 
 function renderBooks(payload) {
@@ -105,7 +179,8 @@ function escapeHtml(s) {
 async function removeBook(bookId) {
   if (!bookId || !confirm('Remove this book from the knowledge base?')) return;
   try {
-    const r = await fetch(`${apiBase()}/settings/book/${encodeURIComponent(bookId)}`, {
+    const base = await apiBase();
+    const r = await fetch(`${base}/settings/book/${encodeURIComponent(bookId)}`, {
       method: 'DELETE',
     });
     const j = await r.json();
@@ -126,7 +201,8 @@ async function testApi() {
   $('apiTestStatus').textContent = 'Status: testing…';
   $('apiTestStatus').style.color = 'var(--text-secondary)';
   try {
-    const r = await fetch(`${apiBase()}/settings/test-api`, {
+    const base = await apiBase();
+    const r = await fetch(`${base}/settings/test-api`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ api_key: key }),
@@ -140,7 +216,12 @@ async function testApi() {
       $('apiTestStatus').style.color = 'var(--accent-red)';
     }
   } catch (e) {
-    $('apiTestStatus').textContent = 'Status: ✗ network error';
+    const base =
+      typeof lastResolvedOrigin === 'string'
+        ? lastResolvedOrigin
+        : 'http://127.0.0.1:7071';
+    $('apiTestStatus').textContent =
+      `Status: ✗ Failed to fetch (${base}). Is BoilerMind / Settings API running?`;
     $('apiTestStatus').style.color = 'var(--accent-red)';
   }
 }
@@ -155,7 +236,8 @@ async function saveSettings(closeAfterMs) {
   body.voice = $('selVoice').value.trim() || 'Laomedeia';
 
   try {
-    const r = await fetch(`${apiBase()}/settings/save`, {
+    const base = await apiBase();
+    const r = await fetch(`${base}/settings/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -170,7 +252,11 @@ async function saveSettings(closeAfterMs) {
     }
     await loadAll();
   } catch (e) {
-    setSaveBanner(String(e), false);
+    const hint =
+      e && String(e.message || e).includes('fetch')
+        ? ` Failed to reach ${lastResolvedOrigin}.`
+        : '';
+    setSaveBanner(String(e) + hint, false);
   }
 }
 
@@ -183,7 +269,8 @@ async function ingestStream() {
   $('ingestStatus').textContent = '';
   $('ingestProgressBar').style.width = '0%';
   try {
-    const res = await fetch(`${apiBase()}/settings/ingest`, {
+    const base = await apiBase();
+    const res = await fetch(`${base}/settings/ingest`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -192,7 +279,7 @@ async function ingestStream() {
       }),
     });
     if (!res.ok || !res.body) {
-      $('ingestStatus').textContent = 'Ingest request failed.';
+      $('ingestStatus').textContent = `Ingest request failed (${res.status}) at ${base}.`;
       return;
     }
     const reader = res.body.getReader();
@@ -234,7 +321,8 @@ async function ingestStream() {
       }
     }
   } catch (e) {
-    $('ingestStatus').textContent = '✗ ' + String(e);
+    $('ingestStatus').textContent =
+      '✗ Failed to fetch ' + lastResolvedOrigin + ' — ' + String(e);
   }
 }
 
@@ -267,4 +355,4 @@ function wire() {
 }
 
 wire();
-void loadAll();
+void loadAllWhenReady();

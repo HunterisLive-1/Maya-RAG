@@ -92,6 +92,7 @@ def ingest_pdf(
     *,
     on_page: Callable[[int, int], None] | None = None,
     print_progress: bool = True,
+    force: bool = False,
 ) -> int:
     path = Path(pdf_path)
     if not path.is_file():
@@ -103,11 +104,19 @@ def ingest_pdf(
         return 0
 
     col = book_rag._collection
+
+    # Check if already fully ingested (only skip if complete AND not forced).
     existing = col.get(where={"book_id": book_id}, limit=1)
     if existing.get("ids"):
-        if print_progress:
-            print(f"'{book_name}' already ingested, skipping.")
-        return 0
+        if force:
+            # Delete stale/partial entry and re-ingest fresh.
+            col.delete(where={"book_id": book_id})
+            if print_progress:
+                print(f"Force re-ingest: deleted existing entry for '{book_name}'.")
+        else:
+            if print_progress:
+                print(f"'{book_name}' already ingested, skipping.")
+            return 0
 
     doc = fitz.open(path)
     try:
@@ -150,6 +159,7 @@ def ingest_pdf(
             ids_out.append(f"{book_id}:{idx}")
 
         batch = 250
+        total_added = 0
         for b in range(0, len(texts), batch):
             sl = slice(b, b + batch)
             col.add(
@@ -157,13 +167,22 @@ def ingest_pdf(
                 documents=texts[sl],
                 metadatas=metas[sl],
             )
+            total_added += len(texts[sl])
+            logger.info(
+                "ingest_pdf: '%s' batch %d/%d — %d/%d chunks added",
+                book_name,
+                b // batch + 1,
+                -(-len(texts) // batch),
+                total_added,
+                len(texts),
+            )
 
-        added = len(texts)
         if print_progress:
-            print(f"Ingested {added} chunks for '{book_name}'.")
-        return added
+            print(f"Ingested {total_added} chunks for '{book_name}'.")
+        return total_added
     finally:
         doc.close()
+
 
 
 def scan_books_folder(folder: str | Path | None = None) -> List[dict]:

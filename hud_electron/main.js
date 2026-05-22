@@ -8,6 +8,40 @@ let mainWindow = null;
 let settingsWindow = null;
 let visible = true;
 
+/** Resolved once: same BoilerMind.ico as PyInstaller exe (bundled under assets/). */
+function resolveHudIconPath() {
+  const forced = process.env.BOILERMIND_ICON_ICO;
+  try {
+    if (forced && String(forced).trim() && fs.existsSync(forced)) {
+      return path.resolve(forced);
+    }
+  } catch (_e) {
+    /* noop */
+  }
+  /** Installed layout: exeDir/books plus exeDir/assets/icon.ico */
+  const fromBooks = process.env.BOILERMIND_BOOKS_DIR;
+  const cands = [];
+  if (fromBooks && String(fromBooks).trim()) {
+    const root = path.resolve(path.dirname(String(fromBooks)));
+    cands.push(path.join(root, 'assets', 'icon.ico'));
+  }
+  /** Frozen: …/_MEIPASS/hud_electron · Dev: repo/hud_electron */
+  cands.push(path.resolve(__dirname, '..', 'assets', 'icon.ico'));
+  for (const p of cands) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch (_e) {
+      /* noop */
+    }
+  }
+  return undefined;
+}
+
+const HUD_WINDOW_ICON = resolveHudIconPath();
+
+/** Settings HTTP port mirrored from Python `hud_config` (authoritative once WS connects). */
+let settingsPortFromWs = null;
+
 const HUD_W = 340;
 const HUD_H = 680;
 const HUD_MARGIN = 20;
@@ -63,6 +97,10 @@ function createWindow() {
     winOpts.thickFrame = true;
   }
 
+  if (HUD_WINDOW_ICON) {
+    winOpts.icon = HUD_WINDOW_ICON;
+  }
+
   mainWindow = new BrowserWindow(winOpts);
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
@@ -113,6 +151,7 @@ function createSettingsWindow() {
     resizable: false,
     skipTaskbar: true,
     show: false,
+    ...(HUD_WINDOW_ICON ? { icon: HUD_WINDOW_ICON } : {}),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -159,6 +198,24 @@ ipcMain.on('hud-close', () => {
 });
 
 ipcMain.on('open-settings', () => createSettingsWindow());
+
+ipcMain.on('boilermind-settings-port', (_event, port) => {
+  const n = parseInt(String(port), 10);
+  if (Number.isFinite(n) && n >= 1 && n <= 65535) {
+    settingsPortFromWs = n;
+  }
+});
+
+ipcMain.handle('get-settings-api-origin', () => {
+  let p = settingsPortFromWs;
+  if (p == null) {
+    p = parseInt(String(process.env.BOILERMIND_SETTINGS_PORT || '7071'), 10);
+  }
+  if (!Number.isFinite(p) || p < 1 || p > 65535) {
+    p = 7071;
+  }
+  return `http://127.0.0.1:${p}`;
+});
 
 ipcMain.on('settings-window-close', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);

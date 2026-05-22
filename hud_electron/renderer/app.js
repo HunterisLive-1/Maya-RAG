@@ -214,6 +214,15 @@ function handleHudConfig(payload) {
   const dn = (payload.display_name || 'BOILERMIND').trim();
   liveModelDisplay = (lm || dn).toUpperCase().replace(/\s+/g, ' ');
   sysModel.textContent = liveModelDisplay;
+  const sp = payload.settings_api_port;
+  if (typeof sp === 'number' && Number.isFinite(sp) && sp >= 1 && sp <= 65535) {
+    try {
+      const hud = typeof window !== 'undefined' ? window.boilermindHud : undefined;
+      hud?.reportSettingsApiPort?.(sp);
+    } catch (_e) {
+      /* noop */
+    }
+  }
 }
 
 function connectWsLoop() {

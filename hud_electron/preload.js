@@ -13,10 +13,12 @@ contextBridge.exposeInMainWorld('boilermindShell', {
   closeSettingsWindow: () => ipcRenderer.send('settings-window-close'),
   pickPdfFile: () => ipcRenderer.invoke('pick-pdf'),
   copyPdfToBooks: (srcPath) => ipcRenderer.invoke('copy-pdf-to-books', srcPath),
+  getSettingsApiOrigin: () => ipcRenderer.invoke('get-settings-api-origin'),
 });
 
 contextBridge.exposeInMainWorld('boilermindHud', {
   version: 3,
   hudWsUrl: () => `ws://${hudHost}:${hudPort}`,
   settingsApiOrigin: () => `http://127.0.0.1:${settingsPort}`,
+  reportSettingsApiPort: (port) => ipcRenderer.send('boilermind-settings-port', port),
 });

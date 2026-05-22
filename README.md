@@ -126,11 +126,11 @@ With **`python main.py`** running, open **gear** in the HUD title bar for Settin
 ## Windows build (PyInstaller + Inno)
 
 ```powershell
-pip install pillow pyinstaller
+pip install pyinstaller
 python build.py
 ```
 
-Output: **`dist/BoilerMind/BoilerMind.exe`** plus **`data/`** and **`books/`** beside it; frozen runs use **`data/chroma_db/`** next to the exe. **`icon.png`** at project root is converted to **`assets/icon.ico`** when present.
+Output: **`dist/BoilerMind/BoilerMind.exe`** plus **`data/`** and **`books/`** beside it; frozen runs use **`data/chroma_db/`** next to the exe. **`icon.ico`** must exist at the project root (resolved to an absolute path for **`--icon=`**); the same file is copied to **`assets/icon.ico`** for bundled shortcuts.
 
 Compile **`installer.iss`** with [Inno Setup](https://jrsoftware.org/isinfo.php) → **`installer_output/`** (typical per-user install under **`%LocalAppData%\Programs\BoilerMind`**).
 
@@ -142,7 +142,7 @@ Compile **`installer.iss`** with [Inno Setup](https://jrsoftware.org/isinfo.php)
 | `GEMINI_API_KEY not set` | Settings gear or `.env.local`, restart for voice stack |
 | HUD never connects | Python running? Firewall? `npm install` in **`hud_electron/`** |
 | Electron won't launch | Check `hud_electron/node_modules/electron/dist/` |
-| Wrong / quiet mic | **`MAYA_MIC_DEVICE_INDEX`** in `.env.local` |
+| `Failed to fetch` / Settings API | `.env.local` ports can differ from the **startup banner** if a port was busy; this run uses printed WS/Settings ports. Sync `.env.local` or restart after Save. |
 
 ## Repo layout
 

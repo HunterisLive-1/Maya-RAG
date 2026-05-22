@@ -41,13 +41,11 @@ class BoilerMindOrchestrator:
             logger.warning("BookRAG connect failed.")
         elif not book_rag.is_ready():
             logger.warning("No books ingested yet. Run ingest_books.py first.")
-            print("⚠️  No books ingested. Run: python ingest_books.py")
+            logger.warning("No books ingested. Run: python ingest_books.py")
 
         books = book_rag.get_loaded_books()
         if books:
-            print(f"📚 {len(books)} book(s) loaded:")
-            for b in books:
-                print(f"   • {b['book_name']} ({b['total_chunks']} chunks)")
+            logger.info("%d book(s) loaded: %s", len(books), ', '.join(b['book_name'] for b in books))
 
     def _on_mic_chunk(self, pcm: bytes) -> None:
         if not self._bridge.is_mic_enabled():

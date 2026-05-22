@@ -9,6 +9,7 @@ import numpy as np
 
 from chromadb import PersistentClient
 from chromadb.api.types import Documents, EmbeddingFunction, Embeddings, Space
+from chromadb.utils.embedding_functions import register_embedding_function
 
 from paths import chroma_db_path_str
 
@@ -18,6 +19,7 @@ EMBED_MODEL_ID = "BAAI/bge-small-en-v1.5"
 COLLECTION_NAME = "engineering_books"
 
 
+@register_embedding_function
 class _BgeFastEmbed(EmbeddingFunction[Documents]):
     """EmbeddingFunction wrapping fastembed TextEmbedding (BGE-small-en-v1.5)."""
 

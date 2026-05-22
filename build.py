@@ -2,8 +2,10 @@
 BoilerMind distribution build (PyInstaller one-dir + post steps).
 
 Usage (from project root, venv activated):
-  pip install -r requirements.txt pyinstaller pillow
+  pip install -r requirements.txt pyinstaller
   python build.py
+
+Icon: only `{repo_root}/icon.ico` (resolved to an absolute path) is used; no PNG/generated fallback.
 
 Output: dist/BoilerMind/ with BoilerMind.exe
 """
@@ -11,10 +13,14 @@ Output: dist/BoilerMind/ with BoilerMind.exe
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# Sole app icon — absolute path (e.g. C:\\Users\\...\\power plant\\icon.ico).
+ICON_ICO = os.path.abspath(os.path.join(ROOT, "icon.ico"))
 
 
 def sep() -> str:
@@ -31,39 +37,18 @@ def ensure_dir(p: str) -> None:
 
 
 def ensure_icon() -> str:
+    """Use only ICON_ICO (absolute). Sync copy into assets/ for bundled shortcuts."""
+    if not os.path.isfile(ICON_ICO):
+        print("ERROR: Required icon missing:", ICON_ICO, file=sys.stderr)
+        sys.exit(1)
+
     assets = os.path.join(ROOT, "assets")
     ensure_dir(assets)
-    ico = os.path.join(assets, "icon.ico")
-    if os.path.isfile(ico):
-        return ico
-    png_candidates = [
-        os.path.join(ROOT, "icon.png"),
-        os.path.join(assets, "icon.png"),
-    ]
-    src_png = next((p for p in png_candidates if os.path.isfile(p)), None)
-    if src_png:
-        try:
-            from PIL import Image
-
-            img = Image.open(src_png).convert("RGBA")
-            img.save(ico, format="ICO", sizes=[(256, 256), (64, 64), (32, 32), (16, 16)])
-            print(f"Generated {ico} from {src_png}")
-            return ico
-        except Exception as e:
-            print("Pillow ICO convert failed:", e)
-    try:
-        from PIL import Image, ImageDraw
-
-        img = Image.new("RGBA", (256, 256), (6, 13, 22, 255))
-        draw = ImageDraw.Draw(img)
-        draw.ellipse([40, 40, 216, 216], outline=(0, 229, 255), width=8)
-        draw.text((128, 128), "B", fill=(0, 229, 255), anchor="mm")
-        img.save(ico, format="ICO", sizes=[(256, 256)])
-        print("Generated placeholder icon.ico")
-        return ico
-    except Exception as e:
-        print("No icon.ico and placeholder failed:", e)
-        return ""
+    ico_assets = os.path.join(assets, "icon.ico")
+    shutil.copy2(ICON_ICO, ico_assets)
+    print("Using icon:", ICON_ICO)
+    print("Copied to:", ico_assets)
+    return ICON_ICO
 
 
 def npm_install_hud() -> None:
@@ -91,18 +76,12 @@ def main() -> None:
     ensure_dir(assets)
 
     try:
-        from PIL import Image  # noqa: F401
-    except ImportError:
-        run([sys.executable, "-m", "pip", "install", "pillow"])
-        from PIL import Image  # noqa: F401
-
-    try:
         import PyInstaller  # noqa: F401
     except ImportError:
         run([sys.executable, "-m", "pip", "install", "pyinstaller"])
 
     npm_install_hud()
-    icon = ensure_icon()
+    icon = ensure_icon()  # absolute path passed to PyInstaller --icon=
     warmup_fastembed()
 
     s = sep()
@@ -120,25 +99,31 @@ def main() -> None:
         "--name=BoilerMind",
         "--noconfirm",
         "--clean",
+        # NOTE: --windowed hides the console (no stderr visible on crash).
+        # A log file is written to {app}/boilermind.log via main.py for debugging.
         "--windowed",
         "--onedir",
-        "--hidden-import=chromadb",
-        "--hidden-import=chromadb.utils.embedding_functions",
-        "--hidden-import=fastembed",
-        "--hidden-import=onnxruntime",
-        "--hidden-import=google.genai",
-        "--hidden-import=google.generativeai",
-        "--hidden-import=pyaudio",
-        "--hidden-import=uvicorn",
-        "--hidden-import=fastapi",
-        "--hidden-import=starlette",
-        "--hidden-import=pydantic",
+        # --- collect-all: includes every submodule + data files (dynamic imports) ---
+        "--collect-all=uvicorn",       # uvicorn.protocols.http.h11_impl, loops.asyncio, etc.
+        "--collect-all=fastapi",
+        "--collect-all=starlette",
+        "--collect-all=pydantic",
+        "--collect-all=pydantic_core",
         "--collect-all=chromadb",
         "--collect-all=fastembed",
         "--collect-all=google.genai",
+        # --- hidden imports for packages that don't auto-collect cleanly ---
+        "--hidden-import=chromadb.utils.embedding_functions",
+        "--hidden-import=onnxruntime",
+        "--hidden-import=google.generativeai",
+        "--hidden-import=pyaudio",
+        "--hidden-import=h11",          # uvicorn HTTP/1.1 backend
+        "--hidden-import=anyio",
+        "--hidden-import=anyio._backends._asyncio",
+        "--hidden-import=click",        # uvicorn CLI dep (imported at runtime)
+        "--hidden-import=dotenv",
     ]
-    if icon:
-        cmd.append(f"--icon={icon}")
+    cmd.append(f"--icon={icon}")
     for d in datas:
         cmd.append(f"--add-data={d}")
     cmd.extend(
@@ -160,6 +145,11 @@ def main() -> None:
     exe_books = os.path.join(dist_root, "books")
     ensure_dir(exe_data)
     ensure_dir(exe_books)
+
+    # Copy icon.ico to dist root (installer uses {app}\icon.ico directly).
+    ico_dst_root = os.path.join(dist_root, "icon.ico")
+    shutil.copy2(ICON_ICO, ico_dst_root)
+    print("Copied icon to dist root:", ico_dst_root)
 
     env_template = os.path.join(dist_root, ".env.local")
     if not os.path.isfile(env_template):

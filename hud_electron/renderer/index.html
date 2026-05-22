@@ -9,113 +9,108 @@
     <title>BoilerMind HUD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body class="crt-body">
     <div class="crt-wrap">
       <div class="shell">
+
+        <!-- Titlebar -->
         <header class="titlebar">
           <div class="titlebar-drag">
             <span class="logo-glyph">⚡</span>
             <span class="logo-word">BOILERMIND</span>
           </div>
           <div class="titlebar-actions no-drag">
-            <button type="button" class="win-btn" id="btnSettings" title="Settings" aria-label="Settings">
-              ⚙
-            </button>
-            <button type="button" class="win-btn" id="btnMin" title="Minimize" aria-label="Minimize">
-              ─
-            </button>
-            <button type="button" class="win-btn win-close" id="btnClose" title="Close" aria-label="Close">
-              ×
-            </button>
+            <button type="button" class="win-btn" id="btnSettings" title="Settings" aria-label="Settings">⚙</button>
+            <button type="button" class="win-btn" id="btnMin" title="Minimize" aria-label="Minimize">─</button>
+            <button type="button" class="win-btn win-close" id="btnClose" title="Close" aria-label="Close">×</button>
           </div>
         </header>
 
         <div class="shell-main">
-        <section class="status-block" aria-live="polite">
-          <div id="statusIndicator" class="status-indicator state-idle">
-            <!-- Hex / shells -->
-            <div class="status-skin status-skin-base">
-              <svg class="hex-svg" viewBox="0 0 100 100" aria-hidden="true">
-                <polygon
-                  class="hex-poly"
-                  points="50 4, 92 28, 92 72, 50 96, 8 72, 8 28"
-                  fill="none"
-                />
-              </svg>
-            </div>
-            <div class="status-skin status-skin-listen">
-              <div class="ring-arc arc-a"></div>
-              <div class="ring-arc arc-b"></div>
-              <div class="ring-arc arc-c"></div>
-              <div class="sonar sonar-a"></div>
-              <div class="sonar sonar-b"></div>
-              <svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fill="currentColor"
-                  d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.6 17.94 13.71 21 12 21s-4.6-3.06-4.93-9.15A.993.993 0 005 11c-.55 0-1 .45-1 1 0 3.54 2.63 11 8 11s8-7.46 8-11c0-.55-.45-1-1-1z"
-                />
-              </svg>
-            </div>
-            <div class="status-skin status-skin-respond">
-              <div class="dash-spin"></div>
-              <div class="eq-wrap">
-                <span class="eq-bar"></span>
-                <span class="eq-bar"></span>
-                <span class="eq-bar"></span>
-                <span class="eq-bar"></span>
-                <span class="eq-bar"></span>
+
+          <!-- Status Orb -->
+          <section class="status-block" aria-live="polite">
+            <div id="statusIndicator" class="status-indicator state-idle">
+
+              <!-- IDLE -->
+              <div class="status-skin status-skin-base">
+                <svg class="hex-svg" viewBox="0 0 100 100" aria-hidden="true">
+                  <polygon class="hex-poly" points="50 4,92 28,92 72,50 96,8 72,8 28" fill="none" />
+                </svg>
               </div>
-              <div class="particles" aria-hidden="true"></div>
+
+              <!-- LISTENING -->
+              <div class="status-skin status-skin-listen">
+                <div class="ring-arc arc-a"></div>
+                <div class="ring-arc arc-b"></div>
+                <div class="ring-arc arc-c"></div>
+                <div class="sonar sonar-a"></div>
+                <div class="sonar sonar-b"></div>
+                <svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.6 17.94 13.71 21 12 21s-4.6-3.06-4.93-9.15A.993.993 0 005 11c-.55 0-1 .45-1 1 0 3.54 2.63 11 8 11s8-7.46 8-11c0-.55-.45-1-1-1z"/>
+                </svg>
+              </div>
+
+              <!-- RESPONDING -->
+              <div class="status-skin status-skin-respond">
+                <div class="dash-spin"></div>
+                <div class="eq-wrap">
+                  <span class="eq-bar"></span><span class="eq-bar"></span>
+                  <span class="eq-bar"></span><span class="eq-bar"></span>
+                  <span class="eq-bar"></span>
+                </div>
+                <div class="particles" aria-hidden="true"></div>
+              </div>
+
+              <!-- TOOL RUNNING -->
+              <div class="status-skin status-skin-tool">
+                <div class="tool-ring-gap"></div>
+                <svg class="gear-svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.62l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.62l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.62l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.62l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
+              </div>
+
+              <div class="pulse-dot pulse-dot-core" aria-hidden="true"></div>
             </div>
-            <div class="status-skin status-skin-tool">
-              <div class="tool-ring-gap"></div>
-              <svg class="gear-svg" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fill="currentColor"
-                  d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.62l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.62l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.62l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.62l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
-                />
-              </svg>
+
+            <div class="state-text-block">
+              <div id="mainStateLabel" class="main-state-label">STANDBY</div>
+              <div id="subStateDots" class="tool-dots" aria-hidden="true"></div>
             </div>
-            <div class="pulse-dot pulse-dot-core" aria-hidden="true"></div>
+          </section>
+
+          <!-- System Status Bar -->
+          <div class="system-bar" id="systemBar">
+            <span id="sysOnlineLed" class="sb-led led-red" aria-hidden="true"></span>
+            <span id="sysOnlineText" class="sb-item dim">INITIALIZING</span>
+            <span class="sb-sep">|</span>
+            <span id="sysModel" class="sb-item sb-model">—</span>
+            <span class="sb-sep">|</span>
+            <span id="sysWs" class="sb-item">WS: —</span>
           </div>
-          <div class="state-text-block">
-            <div id="mainStateLabel" class="main-state-label">STANDBY</div>
-            <div id="subStateDots" class="tool-dots" aria-hidden="true"></div>
-          </div>
-        </section>
 
-        <div class="system-bar" id="systemBar">
-          <span id="sysOnlineLed" class="sb-led led-red" aria-hidden="true"></span>
-          <span id="sysOnlineText" class="sb-item dim">INITIALIZING</span>
-          <span class="sb-sep">|</span>
-          <span id="sysModel" class="sb-item sb-model">—</span>
-          <span class="sb-sep">|</span>
-          <span id="sysWs" class="sb-item">WS: —</span>
-        </div>
+          <!-- Knowledge Base -->
+          <section class="panel kb-panel">
+            <h3 class="section-head">
+              <span class="section-accent"></span>
+              <span class="section-title-label">━ KNOWLEDGE BASE ━</span>
+            </h3>
+            <div id="booksList" class="books-cards"></div>
+          </section>
 
-        <section class="panel kb-panel">
-          <h3 class="section-head">
-            <span class="section-accent"></span>
-            <span class="section-title-label">━━ KNOWLEDGE BASE ━━</span>
-          </h3>
-          <div id="booksList" class="books-cards"></div>
-        </section>
+          <!-- Conversation -->
+          <section class="panel conv-panel">
+            <h3 class="section-head">
+              <span class="section-accent"></span>
+              <span class="section-title-label">━ CONVERSATION ━</span>
+            </h3>
+            <div id="transcript" class="transcript-scroll"></div>
+          </section>
 
-        <section class="panel conv-panel">
-          <h3 class="section-head">
-            <span class="section-accent"></span>
-            <span class="section-title-label">━━ CONVERSATION ━━</span>
-          </h3>
-          <div id="transcript" class="transcript-scroll"></div>
-        </section>
-
-        <footer class="hud-footer">⚡ BOILERMIND v1.0&nbsp;&nbsp;•&nbsp;&nbsp;BU HUNTERISLIVE</footer>
+          <footer class="hud-footer">⚡ BOILERMIND v1.0 &nbsp;•&nbsp; AI POWER PLANT</footer>
         </div>
       </div>
     </div>

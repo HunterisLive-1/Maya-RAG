@@ -20,3 +20,11 @@ desktop.ini
 
 # Optional: avoid committing large PDFs
 books/*.pdf
+
+# Generated / runtime files
+*.spec
+*.log
+boilermind.log
+assets/icon.ico
+icon.ico
+icon.png

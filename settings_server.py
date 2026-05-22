@@ -92,10 +92,11 @@ def _allowed_pdf(raw: Path) -> Path:
 def create_settings_app() -> FastAPI:
     app = FastAPI(title="BoilerMind Settings API", docs=False, redoc_url=False)
 
+    # allow_credentials=False so allow_origins=["*"] is valid for Electron file:// / null Origin fetches
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
-        allow_credentials=True,
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -234,6 +235,7 @@ def create_settings_app() -> FastAPI:
                         book_id,
                         on_page=on_pg,
                         print_progress=False,
+                        force=True,   # always delete stale/partial and fully re-ingest
                     )
                     result_holder["chunks"] = int(n)
                 except Exception as e:
@@ -273,7 +275,10 @@ async def serve_settings_forever(port: int) -> None:
         app,
         host="127.0.0.1",
         port=int(port),
-        log_level="warning",
+        # log_config=None  → prevents uvicorn calling sys.stdout.isatty()
+        # which crashes under --windowed where sys.stdout is None.
+        log_config=None,
+        access_log=False,
         loop="asyncio",
     )
     server = uvicorn.Server(config)
